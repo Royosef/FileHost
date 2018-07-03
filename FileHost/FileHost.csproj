@@ -67,6 +67,9 @@
     </Compile>
     <Compile Include="Infra\DelegateCommand.cs" />
     <Compile Include="Infra\ViewModelBase.cs" />
+    <Compile Include="Models\FileItem.cs" />
+    <Compile Include="Models\FolderItem.cs" />
+    <Compile Include="Models\Item.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ViewModels\MainWindowVM.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
@@ -103,6 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
+    <Folder Include="ViewModels\" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\createfolderImg.png" />
