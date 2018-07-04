@@ -1,9 +1,12 @@
-﻿namespace FileHost.Models
+﻿using Newtonsoft.Json;
+
+namespace FileHost.Models
 {
-    public class FileItem
+    public class FileItem : Item
     {
-        public string Extension { get; set; }
-        public int Size { get; set; }
-        public string ContainingFolder { get; set; }
+        [JsonProperty("containingFolderId")]
+        public string ContainingFolderId { get; set; }
+        [JsonIgnore]
+        public byte[] Data { get; set; }
     }
 }
