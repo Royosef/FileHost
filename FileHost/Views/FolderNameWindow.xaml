@@ -1,0 +1,57 @@
+﻿<Window x:Class="FileHost.Views.FolderNameWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:FileHost.ViewModels"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:si="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:infra="clr-namespace:FileHost.Infra"
+        mc:Ignorable="d"
+        Title="Select Folder Name - FileHost" 
+        Height="200" 
+        Width="400" 
+        WindowStartupLocation="CenterOwner" 
+        ResizeMode="NoResize"
+        Background="AliceBlue"
+        infra:DialogResultAttachedProperty.DialogResult="{Binding DialogResult}">
+    <Window.Resources>
+        <Style x:Key="FolderNameButtons" 
+               TargetType="Button">
+            <Setter Property="FontSize" Value="15"></Setter>
+            <Setter Property="Foreground" Value="White"></Setter>
+            <Setter Property="Background" Value="RoyalBlue"></Setter>
+            <Setter Property="Padding" Value="15, 5"></Setter>
+            <Setter Property="BorderBrush" Value="#355fdd"></Setter>
+        </Style>
+    </Window.Resources>
+    <Window.DataContext>
+        <viewModels:FolderNameWindowVM />
+    </Window.DataContext>
+    <Grid>
+        <StackPanel Orientation="Vertical"
+                    Margin="20">
+            <TextBlock FontSize="16">Folder name:</TextBlock>
+            <TextBox Text="{Binding FolderName}"
+                     Margin="0, 15"
+                     FontSize="16"
+                     Padding="5"></TextBox>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="1"
+                        Margin="0 0 15 0"
+                        Style="{StaticResource FolderNameButtons}" 
+                        Command="{Binding CancelCommand}"
+                        IsDefault="True">Cancel</Button>
+                <Button Grid.Column="2"
+                        Style="{StaticResource FolderNameButtons}" 
+                        Command="{Binding ConfirmCommand}"
+                        IsCancel="True">Ok</Button>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Window>

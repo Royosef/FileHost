@@ -8,6 +8,7 @@ using System.Windows;
 using FileHost.Annotations;
 using FileHost.Infra;
 using FileHost.Models;
+using FileHost.Views;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 
@@ -21,10 +22,58 @@ namespace FileHost.ViewModels
         public ObservableCollection<Item> Items { get; } = new ObservableCollection<Item>();
 
         public DelegateCommand UploadFileCommand { get; }
+        public DelegateCommand CreateFolderCommand { get; }
 
         public MainWindowVM()
         {
             UploadFileCommand = new DelegateCommand(Upload);
+            CreateFolderCommand = new DelegateCommand(CreateFolder);
+        }
+
+        private async void CreateFolder()
+        {
+            var folderName = GetFolderName();
+            if(folderName == null) return;
+
+            try
+            {
+                var folderItem = new FolderItem
+                {
+                    Name = folderName,
+                };
+
+                var docResult = await Client.PostAsync(string.Empty, new StringContent(JsonConvert.SerializeObject(folderItem), Encoding.UTF8, "application/json"));
+
+                if (!docResult.IsSuccessStatusCode)
+                {
+                    MessageBox.Show($"Error: Some error occurred.\nFolder: {folderItem.Name}");
+                    return;
+                }
+
+                var doc = JsonConvert.DeserializeAnonymousType(await docResult.Content.ReadAsStringAsync(), new { Id = string.Empty, Rev = string.Empty });
+                folderItem.Id = doc.Id;
+                folderItem.Revision = doc.Rev;
+
+                Items.Add(folderItem);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show($"Error: Some error occurred, could not create folder.\nFolder: {folderName}");
+            }
+        }
+
+        [CanBeNull]
+        private string GetFolderName()
+        {
+            var dialog = new FolderNameWindow();
+            var dialogResult = dialog.ShowDialog();
+
+            if (dialogResult ?? false)
+            {
+                return (dialog.DataContext as FolderNameWindowVM)?.FolderName;
+            }
+
+            return  null;
         }
 
         private async void Upload()
