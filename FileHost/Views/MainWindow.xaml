@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:FileHost.ViewModels"
         mc:Ignorable="d"
-        Title="FileHost" Height="450" Width="800">
+        Title="FileHost" Height="400" Width="500"
+        MinHeight="400" MinWidth="500"
+        Background="AliceBlue">
     <Window.Resources>
         <Style TargetType="Button" x:Key="Buttons">
             <Setter Property="Foreground" Value="White"></Setter>
@@ -30,10 +32,10 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        <Image x:Key="CreateFolderImg" Source="../Assets/createFolderImg.png" Width="40"></Image>
-        <Image x:Key="DownloadImg" Source="../Assets/downloadImg.png" Width="36"></Image>
-        <Image x:Key="UploadImg" Source="../Assets/uploadImg.png" Width="36"></Image>
-        <Image x:Key="DeleteImg" Source="../Assets/deleteImg.png" Width="36"></Image>
+        <Image x:Key="CreateFolderImg" Source="../Assets/createFolder.png" Width="40"></Image>
+        <Image x:Key="DownloadImg" Source="../Assets/download.png" Width="36"></Image>
+        <Image x:Key="UploadImg" Source="../Assets/upload.png" Width="36"></Image>
+        <Image x:Key="DeleteImg" Source="../Assets/delete.png" Width="36"></Image>
     </Window.Resources>
     <Window.DataContext>
         <viewModels:MainWindowVM />
@@ -72,7 +74,7 @@
                        VerticalAlignment="Center"
                        FontSize="24"
                        Foreground="RoyalBlue">There is no any files yet.</TextBlock>
-            <Image Source="..\Assets\emptyImg.png"
+            <Image Source="..\Assets\empty.png"
                    Width="128"
                    Margin="0, 20, 0, 0"
                    Opacity="0.7"></Image>

@@ -104,17 +104,18 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Resource Include="Assets\createfolderImg.png" />
-    <Resource Include="Assets\downloadImg.png" />
-    <Resource Include="Assets\uploadImg.png" />
+    <Resource Include="Assets\createFolder.png" />
+    <Resource Include="Assets\deleteColored.png" />
+    <Resource Include="Assets\download.png" />
+    <Resource Include="Assets\empty.png" />
+    <Resource Include="Assets\upload.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\deleteImg.png" />
+    <Resource Include="Assets\delete.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\emptyImg.png" />
+    <Resource Include="Assets\folder.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
