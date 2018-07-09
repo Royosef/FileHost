@@ -237,15 +237,37 @@ namespace FileHost.ViewModels
 
         private string GetFolderName()
         {
-            var dialog = new FolderNameWindow();
-            var dialogResult = dialog.ShowDialog();
+            var existingFoldersNames = GetExistingFoldersNames();
+            bool isNameSelected;
 
-            if (dialogResult ?? false)
+            do
             {
-                return (dialog.DataContext as FolderNameWindowVM)?.FolderName;
-            }
+                var dialog = new FolderNameWindow();
+                var dialogResult = dialog.ShowDialog();
+                isNameSelected = dialogResult ?? false;
+
+                if (isNameSelected)
+                {
+                    var name = (dialog.DataContext as FolderNameWindowVM)?.FolderName;
+                    var alreadyExist = existingFoldersNames.Any(x => string.CompareOrdinal(x, name) == 0);
+
+                    if (!alreadyExist)
+                    {
+                        return name;
+                    }
+
+                    MessageBox.Show("Error: Folder with the same name already exist.");
+                }
+
+            } while (isNameSelected);
+
 
             return string.Empty;
+        }
+
+        private List<string> GetExistingFoldersNames()
+        {
+            return Items.Where(x => x is FolderPreviewVM).Select(x => x.Name).ToList();
         }
 
         private async void Upload()
@@ -256,10 +278,10 @@ namespace FileHost.ViewModels
             foreach (var file in files)
             {
                 var fileItem = await CreateFileDocument(file);
-
+                
                 if (fileItem != null)
                 {
-					Items.Add(new FilePreviewVM(fileItem));
+                    Items.Add(new FilePreviewVM(fileItem));
                     UpdateIsEmpty();
                 }
             }
@@ -278,6 +300,7 @@ namespace FileHost.ViewModels
         private async Task<FileItem> CreateFileDocument(string file)
         {
             var fileName = Path.GetFileName(file);
+            fileName = RenameFileWithExistingName(fileName);
 
             try
             {
@@ -332,6 +355,19 @@ namespace FileHost.ViewModels
                 MessageBox.Show($"Error: Some error occurred.\nFile: {fileName}");
                 return null;
             }
+        }
+
+        private string RenameFileWithExistingName(string fileName)
+        {
+            var existingFilesNames = Items.Where(x => x is FilePreviewVM).Select(x => x.Name).ToList();
+            var nameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+
+            if (existingFilesNames.Any(x => string.CompareOrdinal(x, nameWithoutExtension) == 0))
+            {
+                return $"{nameWithoutExtension} - {DateTime.Now.Ticks.ToString()}{Path.GetExtension(fileName)}";
+            }
+
+            return fileName;
         }
 
         private byte[] ReadBytes(string file)
