@@ -1,39 +1,209 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
 using FileHost.Annotations;
 using FileHost.Infra;
 using FileHost.Models;
 using FileHost.Views;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace FileHost.ViewModels
 {
     public class MainWindowVM : ViewModelBase
     {
-        public FolderItem CurrentFolder { get; set; } = null;
+        private bool _isEmpty;
+        private bool _isMainFolder;
+        private string _folderName;
+        private FolderItem _currentFolder;
+
+        public FolderItem CurrentFolder
+        {
+            get => _currentFolder;
+            set
+            {
+                _currentFolder = value;
+                FolderName = _currentFolder?.Name;
+                IsMainFolder = value == null;
+            }
+        }
+
+        public bool IsMainFolder
+        {
+            get => _isMainFolder;
+            set
+            {
+                if (_isMainFolder == value) return;
+                _isMainFolder = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string FolderName
+        {
+            get => _folderName;
+            set
+            {
+                if (_folderName == value) return;
+                _folderName = value;
+                OnPropertyChanged();
+            }
+        }
+
         public HttpClient Client { get; } = new HttpClient {BaseAddress = new Uri("http://127.0.0.1:5984/filehost/")};
 
-        public ObservableCollection<Item> Items { get; } = new ObservableCollection<Item>();
+        public ObservableCollection<ItemPreviewVM> Items { get; } = new ObservableCollection<ItemPreviewVM>();
 
         public DelegateCommand UploadFileCommand { get; }
         public DelegateCommand CreateFolderCommand { get; }
+        public DelegateCommand WindowLoadCommand { get; set; }
+
+        public bool IsEmpty
+        {
+            get => _isEmpty;
+            set
+            {
+                if(value == _isEmpty) return;
+                _isEmpty = value;
+                OnPropertyChanged();
+            }
+        }
 
         public MainWindowVM()
         {
+            CurrentFolder = null;
+
             UploadFileCommand = new DelegateCommand(Upload);
             CreateFolderCommand = new DelegateCommand(CreateFolder);
+            WindowLoadCommand = new DelegateCommand(WindowLoaded);
+        }
+
+        private async void WindowLoaded(object obj)
+        {
+            switch (obj)
+            {
+                case FolderPreviewVM folderPreviewVM:
+                    CurrentFolder = new FolderItem
+                    {
+                        Id = folderPreviewVM.Id,
+                        Name = folderPreviewVM.Name,
+                        Revision = folderPreviewVM.Revision
+                    };
+                    break;
+                case null:
+                    CurrentFolder = null;
+                    break;
+            }
+
+            Items.Clear();
+
+			await LoadItems();
+			UpdateIsEmpty();
+		}
+
+		private void UpdateIsEmpty()
+		{
+			IsEmpty = !Items.Any();
+		}
+
+		private async Task LoadItems()
+        {
+            if (IsMainFolder)
+            {
+                await LoadFolders();
+            }
+            else
+            {
+                await LoadFolderFiles();
+            }
+		}
+
+        private async Task LoadFolderFiles()
+        {
+            var filesResult = await Client.GetAsync($"_design/filehost/_view/docsByFolder?key=\"{CurrentFolder.Id}\"&include_docs=true");
+
+            if (!filesResult.IsSuccessStatusCode)
+            {
+                MessageBox.Show($"Error: Could not sync {CurrentFolder.Name}'s files.");
+                return;
+            }
+
+            var filesJson = await filesResult.Content.ReadAsStringAsync();
+            var filesItems = GetFolderFiles(filesJson);
+
+            filesItems.ForEach(Items.Add);
+        }
+
+        private List<FilePreviewVM> GetFolderFiles(string filesJson)
+        {
+            var filesItems = new List<FilePreviewVM>();
+            var jFilesItems = JArray.Parse(JObject.Parse(filesJson)["rows"].ToString()).ToList();
+
+            foreach (var fileItemDoc in jFilesItems)
+            {
+                var fileItem = JsonConvert.DeserializeObject<FileItem>(fileItemDoc["doc"].ToString());
+                filesItems.Add(new FilePreviewVM(fileItem));
+            }
+
+            return filesItems;
+        }
+
+        private async Task LoadFolders()
+        {
+            var foldersResult = await Client.GetAsync("_design/filehost/_view/folders?include_docs=true");
+
+            if (!foldersResult.IsSuccessStatusCode)
+            {
+                MessageBox.Show("Error: Could not sync folders.");
+                return;
+            }
+
+            var foldersJson = await foldersResult.Content.ReadAsStringAsync();
+            var folderItems = await GetFolderItems(foldersJson);
+
+            folderItems.ForEach(Items.Add);
+        }
+
+        private async Task<List<FolderPreviewVM>> GetFolderItems(string foldersJson)
+        {
+            var folderItems = new List<FolderPreviewVM>();
+            var jFolderItems = JArray.Parse(JObject.Parse(foldersJson)["rows"].ToString()).ToList();
+
+            foreach (var folderItemDoc in jFolderItems)
+            {
+                var folderItem = JsonConvert.DeserializeObject<FolderItem>(folderItemDoc["doc"].ToString());
+                folderItem.ItemsAmount = await GetFolderItemsAmount(folderItem.Id);
+                folderItems.Add(new FolderPreviewVM(folderItem));
+            }
+
+            return folderItems;
+        }
+
+        private async Task<int> GetFolderItemsAmount(string folderId)
+        {
+            var amountResult = await Client.GetAsync($"_design/filehost/_view/amountOfFolderDocsByFolder?key=\"{folderId}\"");
+            var jObjResult = JObject.Parse(await amountResult.Content.ReadAsStringAsync());
+
+            if (!jObjResult["rows"].HasValues) return 0;
+
+            var jObjAmount = jObjResult["rows"][0]["value"];
+
+            return int.Parse(jObjAmount.ToString());
         }
 
         private async void CreateFolder()
         {
             var folderName = GetFolderName();
-            if(folderName == null) return;
+            if(folderName == string.Empty) return;
 
             try
             {
@@ -54,15 +224,17 @@ namespace FileHost.ViewModels
                 folderItem.Id = doc.Id;
                 folderItem.Revision = doc.Rev;
 
-                Items.Add(folderItem);
-            }
+                Items.Add(new FolderPreviewVM(folderItem));
+
+				UpdateIsEmpty();
+
+			}
             catch (Exception)
             {
                 MessageBox.Show($"Error: Some error occurred, could not create folder.\nFolder: {folderName}");
             }
         }
 
-        [CanBeNull]
         private string GetFolderName()
         {
             var dialog = new FolderNameWindow();
@@ -73,12 +245,12 @@ namespace FileHost.ViewModels
                 return (dialog.DataContext as FolderNameWindowVM)?.FolderName;
             }
 
-            return  null;
+            return string.Empty;
         }
 
         private async void Upload()
         {
-            var files = GetFiles();
+            var files = GetUploadingFiles();
             if (files == null) return;
 
             foreach (var file in files)
@@ -87,15 +259,15 @@ namespace FileHost.ViewModels
 
                 if (fileItem != null)
                 {
-                    Items.Add(fileItem);
+					Items.Add(new FilePreviewVM(fileItem));
+                    UpdateIsEmpty();
                 }
             }
 
-            MessageBox.Show("Upload finished.");
+			MessageBox.Show("Upload finished.");
         }
 
-        [CanBeNull]
-        private string[] GetFiles()
+        private IEnumerable<string> GetUploadingFiles()
         {
             var fileDialog = new OpenFileDialog { Multiselect = true };
             var isFilesSelected = fileDialog.ShowDialog();
@@ -115,7 +287,8 @@ namespace FileHost.ViewModels
                 {
                     Data = bin,
                     Name = fileName,
-                    ContainingFolderId = CurrentFolder?.Id
+                    ContainingFolderId = CurrentFolder?.Id ?? "null",
+					Size = bin.Length
                 };
 
                 var docResult = await Client.PostAsync(string.Empty, new StringContent(JsonConvert.SerializeObject(fileItem), Encoding.UTF8, "application/json"));
@@ -174,18 +347,27 @@ namespace FileHost.ViewModels
         private async Task<bool> UploadDocumentAttachment(FileItem fileItem)
         {
             var attachmentResult = await Client.PutAsync($"{fileItem.Id}/{fileItem.Name}?rev={fileItem.Revision}", new ByteArrayContent(fileItem.Data));
+            
+            if (attachmentResult.IsSuccessStatusCode)
+            {
+                var content = await attachmentResult.Content.ReadAsStringAsync();
+                var rev = JObject.Parse(content)["rev"].ToString();
+                fileItem.Revision = rev;
 
-            if (attachmentResult.IsSuccessStatusCode) return attachmentResult.IsSuccessStatusCode;
+                return true;
+            }
 
             await DeleteDocument(fileItem);
             MessageBox.Show($"Error: Some error occurred.\nFile: {fileItem.Name}");
 
-            return attachmentResult.IsSuccessStatusCode;
+            return false;
         }
 
         private async Task DeleteDocument(Item fileItem)
         {
             await Client.DeleteAsync($"{fileItem.Id}/{fileItem.Name}?rev={fileItem.Revision}");
-        }
+
+			UpdateIsEmpty();
+		}
     }
 }

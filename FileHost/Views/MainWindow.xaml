@@ -4,18 +4,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:FileHost.ViewModels"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:views="clr-namespace:FileHost.Views"
+        xmlns:infra="clr-namespace:FileHost.Infra"
         mc:Ignorable="d"
-        Title="FileHost" Height="600" Width="800"
+        Title="FileHost" Height="600" Width="900"
         MinHeight="400" MinWidth="500"
         Background="AliceBlue">
     <Window.Resources>
-        <Style TargetType="Button" x:Key="Buttons">
-            <Setter Property="Foreground" Value="White"></Setter>
+        <ImageBrush x:Key="BackArrow" ImageSource="../Assets/backArrow.png"></ImageBrush>
+        <ImageBrush x:Key="OverBackArrow" ImageSource="../Assets/overBackArrow.png"></ImageBrush>
+        <Style TargetType="Button" x:Key="ButtonsStyle">
             <Setter Property="Background" Value="RoyalBlue"></Setter>
-            <Setter Property="FontSize" Value="16"></Setter>
-            <Setter Property="FontWeight" Value="16"></Setter>
-            <Setter Property="FontFamily" Value="consolas"></Setter>
-
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -32,16 +32,46 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <Style TargetType="Button" x:Key="BackButtonStyle">
+            <Setter Property="Background" Value="{StaticResource BackArrow}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid Background="{TemplateBinding Background}" >
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource OverBackArrow}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         <Image x:Key="CreateFolderImg" Source="../Assets/createFolder.png" Width="40"></Image>
         <Image x:Key="DownloadImg" Source="../Assets/download.png" Width="36"></Image>
         <Image x:Key="UploadImg" Source="../Assets/upload.png" Width="36"></Image>
         <Image x:Key="DeleteImg" Source="../Assets/delete.png" Width="36"></Image>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <infra:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <infra:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
     </Window.Resources>
     <Window.DataContext>
         <viewModels:MainWindowVM />
     </Window.DataContext>
-    <StackPanel>
-        <Grid Background="RoyalBlue">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding WindowLoadCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Background="RoyalBlue" Height="60">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"></ColumnDefinition>
                 <ColumnDefinition Width="auto"></ColumnDefinition>
@@ -57,20 +87,61 @@
                        FontStyle="Italic">FileHost</TextBlock>
             <Button Grid.Column="1" 
                     Command="{Binding CreateFolderCommand}"
-                    Style="{StaticResource Buttons}" 
-                    Content="{StaticResource CreateFolderImg}"></Button>
+                    Style="{StaticResource ButtonsStyle}" 
+                    Content="{StaticResource CreateFolderImg}"
+                    IsEnabled="{Binding IsMainFolder}"></Button>
             <Button Grid.Column="2" 
-                    Style="{StaticResource Buttons}" 
+                    Style="{StaticResource ButtonsStyle}" 
                     Content="{StaticResource DownloadImg}"></Button>
             <Button Grid.Column="3" 
                     Command="{Binding UploadFileCommand}"
-                    Style="{StaticResource Buttons}" 
-                    Content="{StaticResource UploadImg}"></Button>
+                    Style="{StaticResource ButtonsStyle}" 
+                    Content="{StaticResource UploadImg}"
+                    IsEnabled="{Binding IsMainFolder, Converter={StaticResource InverseBooleanConverter}}"></Button>
             <Button Grid.Column="4" 
-                    Style="{StaticResource Buttons}" 
+                    Style="{StaticResource ButtonsStyle}" 
                     Content="{StaticResource DeleteImg}"></Button>
         </Grid>
-        <StackPanel Margin="0, 50, 0, 0">
+        <StackPanel Grid.Row="1" 
+                    Orientation="Horizontal"
+                    VerticalAlignment="Top"
+                    Margin="60 20 0 0"
+                    Visibility="{Binding IsMainFolder, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+            <Button BorderThickness="0" 
+                    Height="30"
+                    VerticalAlignment="Center"
+                    Width="30"
+                    Style="{StaticResource BackButtonStyle}" 
+                    Command="{Binding WindowLoadCommand}"/>
+            <TextBlock Text="{Binding FolderName}" 
+                       FontWeight="Bold"
+                       FontSize="24"
+                       Foreground="RoyalBlue"
+                       Margin="0 -3 0 0"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="2"
+                      Padding="60, 0">
+            <ItemsControl ItemsSource="{Binding Items}" HorizontalContentAlignment="Stretch" Focusable="False" Background="Transparent" BorderThickness="0">
+                <ItemsControl.Resources>
+                    <DataTemplate DataType="{x:Type viewModels:FilePreviewVM}">
+                        <views:FilePreviewView />
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type viewModels:FolderPreviewVM}">
+                        <views:FolderPreviewView Focusable="False">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="MouseDoubleClick">
+                                    <i:InvokeCommandAction Command="{Binding Path=DataContext.WindowLoadCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
+                                                           CommandParameter="{Binding}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </views:FolderPreviewView>
+                    </DataTemplate>
+                </ItemsControl.Resources>
+            </ItemsControl>
+        </ScrollViewer>
+        <StackPanel Margin="0, 50, 0, 0"
+                    Grid.Row="2"
+                    Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter} }">
             <TextBlock HorizontalAlignment="Center" 
                        VerticalAlignment="Center"
                        FontSize="24"
@@ -80,5 +151,5 @@
                    Margin="0, 20, 0, 0"
                    Opacity="0.7"></Image>
         </StackPanel>
-    </StackPanel>
+    </Grid>
 </Window>

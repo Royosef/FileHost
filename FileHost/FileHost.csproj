@@ -68,6 +68,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\FolderPreviewView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\FilePreviewView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -78,15 +86,28 @@
     </Compile>
     <Compile Include="Infra\DelegateCommand.cs" />
     <Compile Include="Infra\DialogResultAttachedProperty.cs" />
+    <Compile Include="Infra\FileSizeFormatter.cs" />
+    <Compile Include="Infra\InverseBooleanToVisibilityConverter.cs" />
+    <Compile Include="Infra\InverseBooleanConverter.cs" />
     <Compile Include="Infra\ViewModelBase.cs" />
+    <Compile Include="Models\DocumentType.cs" />
     <Compile Include="Models\FileItem.cs" />
     <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Models\Item.cs" />
     <Compile Include="Properties\Annotations.cs" />
+    <Compile Include="ViewModels\FolderPreviewVM.cs" />
+    <Compile Include="ViewModels\ItemPreviewVM.cs" />
     <Compile Include="ViewModels\FolderNameWindowVM.cs" />
+    <Compile Include="ViewModels\FilePreviewVM.cs" />
     <Compile Include="ViewModels\MainWindowVM.cs" />
     <Compile Include="Views\FolderNameWindow.xaml.cs">
       <DependentUpon>FolderNameWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FolderPreviewView.xaml.cs">
+      <DependentUpon>FolderPreviewView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FilePreviewView.xaml.cs">
+      <DependentUpon>FilePreviewView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -132,6 +153,15 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\folder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\backArrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\overBackArrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\overDeleteColored.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -4,9 +4,13 @@ namespace FileHost.Models
 {
     public class FileItem : Item
     {
-        [JsonProperty("containingFolderId")]
+        [JsonProperty("containing_folder_id")]
         public string ContainingFolderId { get; set; }
-        [JsonIgnore]
+		[JsonProperty("size")]
+		public int Size { get; set; }
+		[JsonIgnore]
         public byte[] Data { get; set; }
+
+        public override DocumentType Type => DocumentType.File;
     }
 }
