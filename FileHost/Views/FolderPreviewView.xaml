@@ -31,6 +31,12 @@
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="MouseDoubleClick">
+            <i:InvokeCommandAction Command="{Binding Path=DataContext.SyncCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
+                                   CommandParameter="{Binding Path=.Item}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Border BorderThickness="2">
         <Border.Style>
             <Style TargetType="Border">
@@ -76,17 +82,23 @@
                 <TextBlock FontSize="16" 
                            Margin="20, 5, 20, 0"
                            TextTrimming="CharacterEllipsis" 
-                           Text="{Binding Name}"/>
+                           Text="{Binding Item.Name}"/>
                 <TextBlock FontSize="14"
                            Margin="20, 5" 
                            Text="{Binding DisplayItemsAmount}"/>
             </StackPanel>
             <Button Grid.Column="3"
                     Margin="10, 0"
-                    Command="{Binding DeleteCommand}" 
                     Width="36"
                     Height="36"
-                    Style="{StaticResource DeleteButtonStyle}"/>
+                    Style="{StaticResource DeleteButtonStyle}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <i:InvokeCommandAction Command="{Binding Path=DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
+                                               CommandParameter="{Binding}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
         </Grid>
     </Border>
 </UserControl>

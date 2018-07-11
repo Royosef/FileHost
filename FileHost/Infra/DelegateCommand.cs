@@ -10,8 +10,8 @@ namespace FileHost.Infra
 
         public event EventHandler CanExecuteChanged;
 
-        public DelegateCommand(Action execute, Predicate<object> canExecute = null)
-            : this(_ => { execute(); })
+        public DelegateCommand(Action execute)
+            : this(_ => execute())
         {
         }
 

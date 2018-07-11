@@ -62,7 +62,7 @@
     </Window.DataContext>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
-            <i:InvokeCommandAction Command="{Binding WindowLoadCommand}" />
+            <i:InvokeCommandAction Command="{Binding SyncCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
     <Grid>
@@ -99,6 +99,7 @@
                     Content="{StaticResource UploadImg}"
                     IsEnabled="{Binding IsMainFolder, Converter={StaticResource InverseBooleanConverter}}"></Button>
             <Button Grid.Column="4" 
+                    Command="{Binding DeleteSelectedCommand}"
                     Style="{StaticResource ButtonsStyle}" 
                     Content="{StaticResource DeleteImg}"></Button>
         </Grid>
@@ -112,7 +113,7 @@
                     VerticalAlignment="Center"
                     Width="30"
                     Style="{StaticResource BackButtonStyle}" 
-                    Command="{Binding WindowLoadCommand}"/>
+                    Command="{Binding SyncCommand}"/>
             <TextBlock Text="{Binding FolderName}" 
                        FontWeight="Bold"
                        FontSize="24"
@@ -127,14 +128,7 @@
                         <views:FilePreviewView />
                     </DataTemplate>
                     <DataTemplate DataType="{x:Type viewModels:FolderPreviewVM}">
-                        <views:FolderPreviewView Focusable="False">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="MouseDoubleClick">
-                                    <i:InvokeCommandAction Command="{Binding Path=DataContext.WindowLoadCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
-                                                           CommandParameter="{Binding}"/>
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </views:FolderPreviewView>
+                        <views:FolderPreviewView />
                     </DataTemplate>
                 </ItemsControl.Resources>
             </ItemsControl>

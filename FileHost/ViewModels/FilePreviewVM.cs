@@ -33,7 +33,9 @@ namespace FileHost.ViewModels
 
 		public string DisplaySize => $"Size: {new FileSizeFormatter().GetReadableFileSize(Size)}";
 
-		public FilePreviewVM(FileItem item) 
+        public string DisplayName => Path.GetFileNameWithoutExtension(Item.Name);
+
+        public FilePreviewVM(FileItem item) 
 			: base(item)
         {
 			Size = item.Size;

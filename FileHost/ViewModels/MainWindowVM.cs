@@ -9,8 +9,6 @@ using FileHost.Infra;
 using FileHost.Models;
 using FileHost.Views;
 using Microsoft.Win32;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace FileHost.ViewModels
 {
@@ -24,6 +22,7 @@ namespace FileHost.ViewModels
         private FileUploader FileUploader { get; } = new FileUploader();
         private FolderCreator FolderCreator { get; } = new FolderCreator();
         private ItemsLoader ItemsLoader { get; } = new ItemsLoader();
+        private ItemsDeleter ItemsDeleter { get; } = new ItemsDeleter();
 
         private FolderItem CurrentFolder
         {
@@ -62,7 +61,9 @@ namespace FileHost.ViewModels
 
         public DelegateCommand UploadFileCommand { get; }
         public DelegateCommand CreateFolderCommand { get; }
-        public DelegateCommand WindowLoadCommand { get; set; }
+        public DelegateCommand SyncCommand { get; }
+        public DelegateCommand DeleteItemCommand { get; }
+        public DelegateCommand DeleteSelectedCommand { get; }
 
         public bool IsEmpty
         {
@@ -81,10 +82,42 @@ namespace FileHost.ViewModels
 
             UploadFileCommand = new DelegateCommand(Upload);
             CreateFolderCommand = new DelegateCommand(CreateFolder);
-            WindowLoadCommand = new DelegateCommand(WindowLoaded);
+            SyncCommand = new DelegateCommand(Sync);
+            DeleteItemCommand = new DelegateCommand(async obj => await DeleteItem(obj));
+            DeleteSelectedCommand = new DelegateCommand(DeleteSelected);
         }
 
-        private async void WindowLoaded(object obj)
+        private async void DeleteSelected()
+        {
+            var selectedItems = Items.Where(x => x.IsSelected).ToList();
+
+            foreach (var item in selectedItems)
+            {
+                await DeleteItem(item);
+            }
+        }
+
+        private async Task DeleteItem(object itemObj)
+        {
+            ItemPreviewVM itemVM = null;
+
+            switch (itemObj)
+            {
+                case FilePreviewVM filePreviewVM:
+                    await ItemsDeleter.DeleteItem(filePreviewVM.Item);
+                    itemVM = filePreviewVM;
+                    break;
+                case FolderPreviewVM folderPreviewVM:
+                    await ItemsDeleter.DeleteFolder((FolderItem)folderPreviewVM.Item);
+                    itemVM = folderPreviewVM;
+                    break;
+            }
+
+            Items.Remove(itemVM);
+            UpdateIsEmpty();
+        }
+
+        private async void Sync(object obj)
         {
             UpdateCurrentFolder(obj);
 
@@ -98,13 +131,8 @@ namespace FileHost.ViewModels
         {
             switch (obj)
             {
-                case FolderPreviewVM folderPreviewVM:
-                    CurrentFolder = new FolderItem
-                    {
-                        Id = folderPreviewVM.Id,
-                        Name = folderPreviewVM.Name,
-                        Revision = folderPreviewVM.Revision
-                    };
+                case FolderItem folderItem:
+                    CurrentFolder = folderItem;
                     break;
                 case null:
                     CurrentFolder = null;
@@ -181,14 +209,14 @@ namespace FileHost.ViewModels
 
         private List<string> GetExistingFoldersNames()
         {
-            return Items.Where(x => x is FolderPreviewVM).Select(x => x.Name).ToList();
+            return Items.Where(x => x is FolderPreviewVM).Select(x => x.Item.Name).ToList();
         }
 
         private async void Upload()
         {
             var files = GetUploadingFiles();
             var fileItems = await FileUploader.Upload(files, CurrentFolder?.Id ?? string.Empty,
-                Items.Where(x => x is FilePreviewVM).Select(x => x.Name).ToList());
+                Items.Where(x => x is FilePreviewVM).Select(x => x.Item.Name).ToList());
 
             if (!fileItems.Any()) return;
 
