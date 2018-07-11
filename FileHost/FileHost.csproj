@@ -84,6 +84,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="FilesManagement\DataAccess.cs" />
+    <Compile Include="FilesManagement\FileUploader.cs" />
+    <Compile Include="FilesManagement\ItemsDeleter.cs" />
+    <Compile Include="FilesManagement\ItemsLoader.cs" />
+    <Compile Include="FilesManagement\FolderCreator.cs" />
     <Compile Include="Infra\DelegateCommand.cs" />
     <Compile Include="Infra\DialogResultAttachedProperty.cs" />
     <Compile Include="Infra\FileSizeFormatter.cs" />
