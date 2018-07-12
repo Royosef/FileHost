@@ -91,6 +91,7 @@
                     Content="{StaticResource CreateFolderImg}"
                     IsEnabled="{Binding IsMainFolder}"></Button>
             <Button Grid.Column="2" 
+                    Command="{Binding DownloadSelectedCommand}"
                     Style="{StaticResource ButtonsStyle}" 
                     Content="{StaticResource DownloadImg}"></Button>
             <Button Grid.Column="3" 

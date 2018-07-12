@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,6 +25,7 @@ namespace FileHost.ViewModels
         private FolderCreator FolderCreator { get; } = new FolderCreator();
         private ItemsLoader ItemsLoader { get; } = new ItemsLoader();
         private ItemsDeleter ItemsDeleter { get; } = new ItemsDeleter();
+        private ItemsDownloader ItemsDownloader { get; } = new ItemsDownloader();
 
         private FolderItem CurrentFolder
         {
@@ -64,6 +67,8 @@ namespace FileHost.ViewModels
         public DelegateCommand SyncCommand { get; }
         public DelegateCommand DeleteItemCommand { get; }
         public DelegateCommand DeleteSelectedCommand { get; }
+        public DelegateCommand DownloadItemCommand { get; }
+        public DelegateCommand DownloadSelectedCommand { get; }
 
         public bool IsEmpty
         {
@@ -85,6 +90,69 @@ namespace FileHost.ViewModels
             SyncCommand = new DelegateCommand(Sync);
             DeleteItemCommand = new DelegateCommand(async obj => await DeleteItem(obj));
             DeleteSelectedCommand = new DelegateCommand(DeleteSelected);
+            DownloadItemCommand = new DelegateCommand(DownloadItem);
+            DownloadSelectedCommand = new DelegateCommand(DownloadSelected);
+        }
+
+        private async void DownloadSelected()
+        {
+            var zipName = GetSavedFileName();
+
+            if (zipName == string.Empty) return;
+
+            var selectedItems = Items.Where(x => x.IsSelected).Select(x => x.Item).ToList();
+            await ItemsDownloader.DownloadItems(selectedItems, zipName);
+
+            foreach (var itemPreviewVM in Items.Where(x => x.IsSelected))
+            {
+                itemPreviewVM.IsSelected = false;
+            }
+        }
+
+        private async void DownloadItem(object itemObj)
+        {
+            switch (itemObj)
+            {
+                case FilePreviewVM filePreviewVM:
+                    var fileName = GetSavedFileName(filePreviewVM.Item.Name, false);
+                    if(fileName == string.Empty) return;
+                    await ItemsDownloader.DownloadFile((FileItem)filePreviewVM.Item, fileName);
+                    break;
+                case FolderPreviewVM folderPreviewVM:
+                    var zipName = GetSavedFileName(folderPreviewVM.Item.Name);
+                    if (zipName == string.Empty) return;
+                    await ItemsDownloader.DownloadFolder((FolderItem)folderPreviewVM.Item, zipName);
+                    break;
+            }
+        }
+
+        private string GetSavedFileName(string name = null, bool isZip = true)
+        {
+            var saveFileDialog = new SaveFileDialog
+            {
+                AddExtension = true,
+                CheckPathExists = true,
+                DefaultExt = ".zip",
+                Filter = "Zip Files|*.zip",
+                FileName = name ?? string.Empty
+            };
+
+            if (!isZip && name != null)
+            {
+                var ext = Path.GetExtension(name);
+
+                saveFileDialog.DefaultExt = $".{ext}";
+                saveFileDialog.Filter = $"{ext.ToUpperInvariant()} Files|*{ext}";
+            }
+
+            var result = saveFileDialog.ShowDialog();
+
+            if (result ?? false)
+            {
+                return saveFileDialog.FileName;
+            }
+
+            return string.Empty;
         }
 
         private async void DeleteSelected()

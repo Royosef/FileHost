@@ -12,6 +12,8 @@
     <UserControl.Resources>
         <ImageBrush x:Key="BackArrow" ImageSource="../Assets/deleteColored.png"></ImageBrush>
         <ImageBrush x:Key="OverBackArrow" ImageSource="../Assets/overDeleteColored.png"></ImageBrush>
+        <ImageBrush x:Key="Download" ImageSource="../Assets/downloadColored.png"></ImageBrush>
+        <ImageBrush x:Key="OverDownload" ImageSource="../Assets/overDownloadColored.png"></ImageBrush>
         <Style TargetType="Button" x:Key="DeleteButtonStyle">
             <Setter Property="Background" Value="{StaticResource BackArrow}"/>
             <Setter Property="Template">
@@ -26,6 +28,23 @@
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="{StaticResource OverBackArrow}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="Button" x:Key="DownloadButtonStyle">
+            <Setter Property="Background" Value="{StaticResource Download}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid Background="{TemplateBinding Background}" >
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource OverDownload}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -48,6 +67,7 @@
                 <ColumnDefinition Width="auto"></ColumnDefinition>
                 <ColumnDefinition Width="auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="auto"></ColumnDefinition>
                 <ColumnDefinition Width="auto"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <i:Interaction.Triggers>
@@ -82,6 +102,18 @@
                            Text="{Binding DisplaySize}"/>
             </StackPanel>
             <Button Grid.Column="3"
+                    Margin="10, 0"
+                    Width="36"
+                    Height="36"
+                    Style="{StaticResource DownloadButtonStyle}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <i:InvokeCommandAction Command="{Binding Path=DataContext.DownloadItemCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
+                                               CommandParameter="{Binding}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="4"
                     Margin="10, 0"
                     Width="36"
                     Height="36"

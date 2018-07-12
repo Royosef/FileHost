@@ -42,6 +42,11 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.Compression.ZipFile, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\DLLs\System.Windows.Interactivity.dll</HintPath>
@@ -86,6 +91,7 @@
     </Compile>
     <Compile Include="FilesManagement\DataAccess.cs" />
     <Compile Include="FilesManagement\FileUploader.cs" />
+    <Compile Include="FilesManagement\ItemsDownloader.cs" />
     <Compile Include="FilesManagement\ItemsDeleter.cs" />
     <Compile Include="FilesManagement\ItemsLoader.cs" />
     <Compile Include="FilesManagement\FolderCreator.cs" />
@@ -167,6 +173,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\overDeleteColored.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\downloadColored.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\overDownloadColored.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
