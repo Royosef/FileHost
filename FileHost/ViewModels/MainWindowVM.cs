@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using FileHost.FilesManagement;
@@ -214,14 +215,21 @@ namespace FileHost.ViewModels
 
 		private async Task LoadItems()
 		{
-            if (IsMainFolder)
-            {
-                (await ItemsLoader.GetFolders()).ForEach(x => Items.Add(new FolderPreviewVM(x)));
+		    try
+		    {
+		        if (IsMainFolder)
+		        {
+		            (await ItemsLoader.GetFolders()).ForEach(x => Items.Add(new FolderPreviewVM(x)));
+		        }
+		        else
+		        {
+		            (await ItemsLoader.GetFolderFiles(CurrentFolder)).ForEach(x => Items.Add(new FilePreviewVM(x)));
+		        }
             }
-            else
-            {
-                (await ItemsLoader.GetFolderFiles(CurrentFolder)).ForEach(x => Items.Add(new FilePreviewVM(x)));
-            }
+		    catch (Exception e)
+		    {
+		        MessageBox.Show(e.Message);
+		    }
 		}
 
         private async void CreateFolder()
@@ -281,15 +289,22 @@ namespace FileHost.ViewModels
 
         private async void Upload()
         {
-            var files = GetUploadingFiles();
-            var fileItems = await FileUploader.Upload(files, CurrentFolder?.Id ?? string.Empty,
-                Items.Where(x => x is FilePreviewVM).Select(x => x.Item.Name).ToList());
+            try
+            {
+                var files = GetUploadingFiles();
+                var fileItems = await FileUploader.Upload(files, CurrentFolder?.Id ?? string.Empty,
+                    Items.Where(x => x is FilePreviewVM).Select(x => x.Item.Name).ToList());
 
-            if (!fileItems.Any()) return;
+                if (!fileItems.Any()) return;
 
-            fileItems.ForEach(x => Items.Add(new FilePreviewVM(x)));
-            UpdateIsEmpty();
-            MessageBox.Show("Upload finished.");
+                fileItems.ForEach(x => Items.Add(new FilePreviewVM(x)));
+                UpdateIsEmpty();
+                MessageBox.Show("Upload finished.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private List<string> GetUploadingFiles()

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,8 +19,7 @@ namespace FileHost.FilesManagement
 
             if (!filesResult.IsSuccessStatusCode)
             {
-                MessageBox.Show($"Error: Could not sync {folderItem.Name}'s files.");
-                return new List<FileItem>();
+                throw new Exception($"Error: Could not sync {folderItem.Name}'s files.");
             }
 
             var filesJson = await filesResult.Content.ReadAsStringAsync();
@@ -48,8 +48,7 @@ namespace FileHost.FilesManagement
 
             if (!foldersResult.IsSuccessStatusCode)
             {
-                MessageBox.Show("Error: Could not sync folders.");
-                return new List<FolderItem>();
+                throw new Exception("Error: Could not sync folders.");
             }
 
             var foldersJson = await foldersResult.Content.ReadAsStringAsync();

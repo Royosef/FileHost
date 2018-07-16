@@ -60,8 +60,7 @@ namespace FileHost.FilesManagement
 
                 if (!docResult.IsSuccessStatusCode)
                 {
-                    MessageBox.Show($"Error: Some error occurred.\nFile: {fileItem.Name}");
-                    return null;
+                    throw new Exception($"Error: Some error occurred.\nFile: {fileItem.Name}");
                 }
 
                 var doc = JsonConvert.DeserializeAnonymousType(await docResult.Content.ReadAsStringAsync(), new { Id = string.Empty, Rev = string.Empty });
@@ -72,30 +71,29 @@ namespace FileHost.FilesManagement
 
                 return fileItem;
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException ex)
             {
-                MessageBox.Show($"Error: File not found.\nFile: {fileName}");
-                return null;
+                throw new FileNotFoundException($"Error: File not found.\nFile: {fileName}", fileName, ex);
+            }   
+            catch (IOException ex)
+            {
+                throw new IOException($"Error: Could not read the file.\nFile: {fileName}", ex);
             }
-            catch (Exception ex) when (ex is IOException || ex is NotSupportedException)
+            catch (NotSupportedException ex)
             {
-                MessageBox.Show($"Error: Could not read the file.\nFile: {fileName}");
-                return null;
+                throw new NotSupportedException($"Error: Could not read the file.\nFile: {fileName}", ex);
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                MessageBox.Show($"Error: Could not upload file.\nFile: {fileName}");
-                return null;
+                throw new HttpRequestException($"Error: Could not upload file.\nFile: {fileName}", ex);
             }
-            catch (OutOfMemoryException)
+            catch (OutOfMemoryException ex)
             {
-                MessageBox.Show($"Error: Could not upload file bigger than 2GB.\nFile: {fileName}");
-                return null;
+                throw new OutOfMemoryException($"Error: Could not upload file bigger than 2GB.\nFile: {fileName}", ex);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                MessageBox.Show($"Error: Some error occurred.\nFile: {fileName}");
-                return null;
+                throw new Exception($"Error: Some error occurred.\nFile: {fileName}", ex);
             }
         }
 

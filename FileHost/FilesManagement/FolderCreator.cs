@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using FileHost.Models;
 using Newtonsoft.Json;
@@ -20,8 +21,7 @@ namespace FileHost.FilesManagement
 
             if (!docResult.IsSuccessStatusCode)
             {
-                MessageBox.Show($"Error: Some error occurred.\nFolder: {folderItem.Name}");
-                return null;
+                throw new Exception();
             }
 
             var doc = JsonConvert.DeserializeAnonymousType(await docResult.Content.ReadAsStringAsync(), new { Id = string.Empty, Rev = string.Empty });
