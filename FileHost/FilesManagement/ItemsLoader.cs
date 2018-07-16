@@ -44,7 +44,7 @@ namespace FileHost.FilesManagement
 
         public async Task<List<FolderItem>> GetFolders()
         {
-            var foldersResult = await DataAccess.GetByView("folders",includeDocs: true);
+            var foldersResult = await DataAccess.GetByView("folders", includeDocs: true);
 
             if (!foldersResult.IsSuccessStatusCode)
             {

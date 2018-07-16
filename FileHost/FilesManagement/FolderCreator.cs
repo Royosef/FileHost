@@ -16,7 +16,7 @@ namespace FileHost.FilesManagement
                 Name = folderName,
             };
 
-            var docResult = await DataAccess.PostAsJson(string.Empty, folderItem);
+            var docResult = await DataAccess.PostAsJson(folderItem, string.Empty);
 
             if (!docResult.IsSuccessStatusCode)
             {

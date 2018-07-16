@@ -56,7 +56,7 @@ namespace FileHost.FilesManagement
                     Size = bin.Length
                 };
 
-                var docResult = await DataAccess.PostAsJson(string.Empty, fileItem);
+                var docResult = await DataAccess.PostAsJson(fileItem, string.Empty);
 
                 if (!docResult.IsSuccessStatusCode)
                 {
@@ -123,7 +123,7 @@ namespace FileHost.FilesManagement
 
         private async Task UploadDocumentAttachment(FileItem fileItem)
         {
-            var attachmentResult = await DataAccess.PutBinary($"{fileItem.Id}/{fileItem.Name}?rev={fileItem.Revision}", fileItem.Data);
+            var attachmentResult = await DataAccess.PutBinary(fileItem.Data, $"{fileItem.Id}/{fileItem.Name}?rev={fileItem.Revision}");
 
             if (attachmentResult.IsSuccessStatusCode)
             {
