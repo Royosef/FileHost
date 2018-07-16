@@ -14,7 +14,7 @@ namespace FileHost.FilesManagement
 
         public async Task<List<FileItem>> GetFolderFiles(FolderItem folderItem)
         {
-            var filesResult = await DataAccess.Get($"_design/filehost/_view/docsByFolder?key=\"{folderItem.Id}\"&include_docs=true");
+            var filesResult = await DataAccess.GetByView("docsByFolder", folderItem.Id, true);
 
             if (!filesResult.IsSuccessStatusCode)
             {
@@ -44,7 +44,7 @@ namespace FileHost.FilesManagement
 
         public async Task<List<FolderItem>> GetFolders()
         {
-            var foldersResult = await DataAccess.Get("_design/filehost/_view/folders?include_docs=true");
+            var foldersResult = await DataAccess.GetByView("folders",includeDocs: true);
 
             if (!foldersResult.IsSuccessStatusCode)
             {
@@ -75,7 +75,8 @@ namespace FileHost.FilesManagement
 
         private async Task<int> GetFolderItemsAmount(string folderId)
         {
-            var amountResult = await DataAccess.Get($"_design/filehost/_view/amountOfFolderDocsByFolder?key=\"{folderId}\"");
+            var amountResult  = await DataAccess.GetByView("amountOfFolderDocsByFolder", folderId);
+
             var jObjResult = JObject.Parse(await amountResult.Content.ReadAsStringAsync());
 
             if (!jObjResult["rows"].HasValues) return 0;

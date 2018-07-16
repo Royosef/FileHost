@@ -16,6 +16,18 @@ namespace FileHost.FilesManagement
 
         private DataAccess() { }
 
+        public async Task<HttpResponseMessage> GetByView(string viewName, string key = null, bool includeDocs = false)
+        {
+            var url = new StringBuilder($"_design/filehost/_view/{viewName}?include_docs={includeDocs}");
+
+            if (key != null)
+            {
+                url.Append($"&key=\"{key}\"");
+            }
+
+            return await Client.GetAsync(url.ToString());
+        }
+
         public async Task<HttpResponseMessage> Get(string url)
         {
             return await Client.GetAsync(url);
