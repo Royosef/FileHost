@@ -10,7 +10,7 @@ namespace FileHost.FilesManagement
 {
     public class ItemsLoader
     {
-        private DataAccess DataAccess { get; } = new DataAccess();
+        private DataAccess DataAccess { get; } = DataAccess.Instance;
 
         public async Task<List<FileItem>> GetFolderFiles(FolderItem folderItem)
         {

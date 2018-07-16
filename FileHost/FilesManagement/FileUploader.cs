@@ -13,7 +13,7 @@ namespace FileHost.FilesManagement
 {
     public class FileUploader
     {
-        private DataAccess DataAccess { get; } = new DataAccess();
+        private DataAccess DataAccess { get; } = DataAccess.Instance;
         private ItemsDeleter ItemsDeleter { get; } = new ItemsDeleter();
 
         public async Task<List<FileItem>> Upload(List<string> files, string currentFolderId, List<string> existingFilesNames)

@@ -9,7 +9,7 @@ namespace FileHost.FilesManagement
 {
     public class ItemsDownloader
     {
-        private DataAccess DataAccess { get; } = new DataAccess();
+        private DataAccess DataAccess { get; } = DataAccess.Instance;
         private ItemsLoader ItemsLoader { get; } = new ItemsLoader();
 
         public async Task DownloadItems(List<Item> items, string name)

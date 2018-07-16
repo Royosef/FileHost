@@ -7,7 +7,7 @@ namespace FileHost.FilesManagement
 {
     public class FolderCreator
     {
-        private DataAccess DataAccess { get; } = new DataAccess();
+        private DataAccess DataAccess { get; } = DataAccess.Instance;
 
         public async Task<FolderItem> CreateFolder(string folderName)
         {

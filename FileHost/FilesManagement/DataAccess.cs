@@ -8,7 +8,13 @@ namespace FileHost.FilesManagement
 {
     public class DataAccess
     {
+        private static readonly  Lazy<DataAccess> LazyInstance = new Lazy<DataAccess>(() => new DataAccess());
+
+        public static DataAccess Instance => LazyInstance.Value;
+
         private HttpClient Client { get; } = new HttpClient { BaseAddress = new Uri("http://127.0.0.1:5984/filehost/") };
+
+        private DataAccess() { }
 
         public async Task<HttpResponseMessage> Get(string url)
         {
