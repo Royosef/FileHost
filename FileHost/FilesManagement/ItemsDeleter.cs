@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FileHost.Models;
 
 namespace FileHost.FilesManagement
@@ -10,19 +12,28 @@ namespace FileHost.FilesManagement
 
         public async Task DeleteItem(Item item)
         {
-            await DataAccess.Delete($"{item.Id}?rev={item.Revision}");
+            await DataAccess.Delete(item.Id, item.Revision);
         }
 
         public async Task DeleteFolder(FolderItem folderItem)
         {
-            await DeleteItem(folderItem);
+            await DeleteMultipleItems(new List<Item>{folderItem});
+        }
 
-            var fileItems = await ItemsLoader.GetFolderFiles(folderItem);
+        public async Task DeleteMultipleItems(List<Item> items)
+        {
+            var toDelete = items.Select(x => new { _deleted = true, _id = x.Id, _rev = x.Revision }).ToList();
 
-            foreach (var file in fileItems)
+            foreach (var item in items)
             {
-                await DeleteItem(file);
+                if (item is FolderItem folderItem)
+                {
+                    var folerFiles = await ItemsLoader.GetFolderFiles(folderItem);
+                    toDelete.AddRange(folerFiles.Select(x => new { _deleted = true, _id = x.Id, _rev = x.Revision }));
+                }
             }
+
+            await DataAccess.PostAsJson(new { docs = toDelete }, "_bulk_docs");
         }
     }
 }

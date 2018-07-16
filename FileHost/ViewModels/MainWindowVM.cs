@@ -159,10 +159,10 @@ namespace FileHost.ViewModels
         {
             var selectedItems = Items.Where(x => x.IsSelected).ToList();
 
-            foreach (var item in selectedItems)
-            {
-                await DeleteItem(item);
-            }
+            await ItemsDeleter.DeleteMultipleItems(selectedItems.Select(x => x.Item).ToList());
+
+            selectedItems.ForEach(x => { Items.Remove(x);});
+            UpdateIsEmpty();
         }
 
         private async Task DeleteItem(object itemObj)

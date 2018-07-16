@@ -54,7 +54,7 @@ namespace FileHost.FilesManagement
 
             if (rev != null)
             {
-                urlStringBuilder.Append($"?rev=\"{rev}\"");
+                urlStringBuilder.Append($"?rev={rev}");
             }
 
             return urlStringBuilder.ToString();

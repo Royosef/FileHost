@@ -121,7 +121,7 @@ namespace FileHost.FilesManagement
 
         private async Task UploadDocumentAttachment(FileItem fileItem)
         {
-            var attachmentResult = await DataAccess.PutBinary(fileItem.Data, $"{fileItem.Id}/{fileItem.Name}?rev={fileItem.Revision}");
+            var attachmentResult = await DataAccess.PutBinary(fileItem.Data, $"{fileItem.Id}/{fileItem.Name}", fileItem.Revision);
 
             if (attachmentResult.IsSuccessStatusCode)
             {

@@ -76,7 +76,7 @@ namespace FileHost.FilesManagement
 
         private async Task<byte[]> DownloadFileItem(FileItem fileItem)
         {
-            var fileResult = await DataAccess.Get($"{fileItem.Id}/{fileItem.Name}?rev={fileItem.Revision}");
+            var fileResult = await DataAccess.Get($"{fileItem.Id}/{fileItem.Name}", fileItem.Revision);
             var fileByteArray = await fileResult.Content.ReadAsByteArrayAsync();
 
             return fileByteArray;
